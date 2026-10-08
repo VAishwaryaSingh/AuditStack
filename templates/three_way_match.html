@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}3-Way Match — Audit Stack{% endblock %}
+{% block page_title %}3-Way Match Automator{% endblock %}
+{% block page_meta %}Auto-reconcile PO, GRN and Supplier Invoice triples. Tune tolerances and export exceptions in one click.{% endblock %}
+
+{% block content %}
+<div class="match-layout">
+
+  <!-- ── LEFT PANEL ─────────────────────────────────────────────── -->
+  <div class="match-left">
+
+    <!-- Match Sets -->
+    <div class="card sessions-card">
+      <div class="card-header">
+        <span class="card-title">Match Sets</span>
+        <button class="btn btn-primary btn-sm" id="newSetBtn">+ New Set</button>
+      </div>
+
+      <div id="newSetForm" style="display:none;padding:12px 16px">
+        <input type="text" id="newSetName" class="control-input"
+               placeholder="e.g. Q2 Procurement Review" maxlength="80"
+               style="width:100%;margin-bottom:8px">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-primary btn-sm" id="createSetBtn" style="flex:1">Create</button>
+          <button class="btn btn-outline btn-sm" id="cancelSetBtn">Cancel</button>
+        </div>
+      </div>
+
+      <div class="session-list" id="setList">
+        {% for ms in match_sets %}
+        <div class="session-item" data-set-id="{{ ms.id }}">
+          <span class="session-dot"></span>
+          <div class="session-item-info">
+            <span class="session-item-name">{{ ms.name }}</span>
+            <span class="session-item-meta">{{ ms.created_at[:10] }}</span>
+          </div>
+          <button class="btn btn-danger btn-sm session-delete-btn" data-set-id="{{ ms.id }}">Delete</button>
+        </div>
+        {% else %}
+        <div class="session-empty-msg" id="noSetsMsg">No sets yet — create one to get started.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Source Documents (zones disabled until set is active) -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Source Documents</span>
+        <span id="uploadSetLabel" style="font-size:11px;color:var(--color-text-muted)">No set selected</span>
+      </div>
+      <div class="card-body" style="padding:16px">
+        <div class="upload-doc-list">
+
+          <!-- PO -->
+          <div class="upload-doc-zone upload-doc-disabled" id="poZone">
+            <div class="upload-doc-icon" style="background:#dbeafe;color:#1d4ed8">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <div class="upload-doc-info">
+              <div class="upload-doc-title">Purchase Orders</div>
+              <div class="upload-doc-hint">CSV/Excel · columns: transaction_id, vendor, ref, date, line_item, quantity, unit_price, buyer, line_total</div>
+              <div class="upload-doc-status d-none" id="poStatus"></div>
+            </div>
+            <svg class="upload-doc-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <input type="file" id="poFile" accept=".csv,.xlsx,.xls,.pdf">
+          </div>
+
+          <!-- GRN -->
+          <div class="upload-doc-zone upload-doc-disabled" id="grnZone">
+            <div class="upload-doc-icon" style="background:#d1fae5;color:#065f46">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+            </div>
+            <div class="upload-doc-info">
+              <div class="upload-doc-title">Goods Received Notes</div>
+              <div class="upload-doc-hint">CSV/Excel · columns: transaction_id, vendor, ref, date, line_item, quantity, received_by, line_total</div>
+              <div class="upload-doc-status d-none" id="grnStatus"></div>
+            </div>
+            <svg class="upload-doc-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <input type="file" id="grnFile" accept=".csv,.xlsx,.xls,.pdf">
+          </div>
+
+          <!-- Invoice -->
+          <div class="upload-doc-zone upload-doc-disabled" id="invoiceZone">
+            <div class="upload-doc-icon" style="background:#fef3c7;color:#92400e">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <div class="upload-doc-info">
+              <div class="upload-doc-title">Supplier Invoices</div>
+              <div class="upload-doc-hint">CSV/Excel · columns: transaction_id, vendor, ref, date, line_item, quantity, unit_price, due_date, line_total</div>
+              <div class="upload-doc-status d-none" id="invoiceStatus"></div>
+            </div>
+            <svg class="upload-doc-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <input type="file" id="invoiceFile" accept=".csv,.xlsx,.xls,.pdf">
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Tolerance Thresholds -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Tolerance Thresholds</span>
+      </div>
+      <div class="card-body" style="padding:16px">
+        <div class="tol-group">
+          <div class="tol-header">
+            <span class="tol-label">Price Variance</span>
+            <span class="tol-val-box"><span id="priceVal">2</span>%</span>
+          </div>
+          <input type="range" id="priceSlider" min="0" max="20" step="0.5" value="2">
+          <p class="tol-hint">Allowable % delta between PO, GRN, and Invoice unit price.</p>
+        </div>
+        <div class="tol-group" style="margin-top:16px">
+          <div class="tol-header">
+            <span class="tol-label">Quantity Variance</span>
+            <span class="tol-val-box"><span id="qtyVal">2</span>%</span>
+          </div>
+          <input type="range" id="qtySlider" min="0" max="20" step="0.5" value="2">
+          <p class="tol-hint">Allowable % delta between PO, GRN, and Invoice quantity.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT PANEL ────────────────────────────────────────────── -->
+  <div class="match-right">
+
+    <!-- Summary row (hidden until transactions are loaded) -->
+    <div class="match-summary-row d-none" id="summaryRow">
+      <button class="match-pill all active" id="filterAll">
+        All <span class="pill-count" id="countAll">0</span>
+      </button>
+      <button class="match-pill perfect" id="filterPerfect">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        Perfect <span class="pill-count" id="countPerfect">0</span>
+      </button>
+      <button class="match-pill variance" id="filterVariance">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Variance <span class="pill-count" id="countVariance">0</span>
+      </button>
+      <button class="match-pill tolerance" id="filterTolerance">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+        Tolerance <span class="pill-count" id="countTolerance">0</span>
+      </button>
+      <button class="match-pill missing" id="filterMissing">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        Missing <span class="pill-count" id="countMissing">0</span>
+      </button>
+      <div class="ml-auto">
+        <button class="btn btn-primary" id="exportBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export Exception Report
+        </button>
+      </div>
+    </div>
+
+    <!-- Table card -->
+    <div class="card table-card">
+      <div class="table-toolbar" id="tableToolbar" style="display:none">
+        <input type="text" class="table-search" id="tableSearch"
+               placeholder="Search transaction ID, vendor, reference…">
+      </div>
+      <div id="tableWrapper">
+        <!-- empty state: no set selected -->
+        <div class="empty-state" id="emptyNoSet">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
+              <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+          </div>
+          <div class="empty-title">No match set selected</div>
+          <div class="empty-desc">Create or select a Match Set on the left to get started.</div>
+        </div>
+
+        <!-- empty state: set active, no uploads yet -->
+        <div class="empty-state d-none" id="emptyNoUploads">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="empty-title">No documents uploaded yet</div>
+          <div class="empty-desc">Upload PO, GRN, and Invoice files in the Source Documents panel to begin matching.</div>
+        </div>
+
+        <!-- actual table (hidden until data loaded) -->
+        <div class="table-wrapper d-none" id="realTable">
+          <table>
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Vendor</th>
+                <th>PO Ref</th>
+                <th>GRN Ref</th>
+                <th>Invoice Ref</th>
+                <th>Status Flag</th>
+                <th style="width:28px"></th>
+              </tr>
+            </thead>
+            <tbody id="matchTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── DETAIL MODAL ───────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="detailOverlay">
+  <div class="modal modal-wide">
+    <div class="modal-header" style="padding:20px 24px;align-items:flex-start">
+      <div>
+        <h2 class="modal-title" id="modalTxnId"></h2>
+        <p class="modal-txn-meta" id="modalVendor"></p>
+        <div id="modalDiscNote" style="margin-top:6px"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:16px">
+        <span id="modalStatusBadge"></span>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:16px 24px 24px">
+      <div class="match-cards" id="matchCards"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/three_way_match.js"></script>
+{% endblock %}

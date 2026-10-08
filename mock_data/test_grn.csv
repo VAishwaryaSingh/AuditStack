@@ -1,0 +1,10 @@
+transaction_id,vendor,ref,date,line_item,quantity,received_by,line_total
+TXN-10421,Acme Industrial Corp,GRN-2025-0418,2025-11-12,Industrial Centrifugal Pumps,50,Warehouse A,12000.00
+TXN-10422,Northwind Logistics,GRN-2025-0419,2025-11-09,Warehouse Shelving Units,20,Dock B,3700.00
+TXN-10423,Lumen Optics Ltd,GRN-2025-0420,2025-11-14,LED Panel Lights (40W),200,Plant 2,9000.00
+TXN-10424,Helix Chemicals GmbH,GRN-2025-0421,2025-11-15,Industrial Solvent (25L),30,Chem Store,9600.00
+TXN-10425,Bristol Office Supply,GRN-2025-0422,2025-11-17,Ergonomic Task Chairs,15,Office A,6150.00
+TXN-10426,Vertex Steelworks,GRN-2025-0423,2025-11-18,Steel Beam Sections (6m),40,Yard C,3800.00
+TXN-10427,Atlas Cleaning Co.,GRN-2025-0424,2025-11-19,Commercial Floor Cleaner (10L),99,Plant 1,2821.50
+TXN-10428,Continental Hardware,GRN-2025-0425,2025-11-18,Stainless Steel Brackets (Type-B),80,Plant 1,760.00
+TXN-10429,Pioneer Polymers,GRN-2025-0426,2025-11-20,HD Polyethylene Pellets (500kg),500,Silo 3,2100.00

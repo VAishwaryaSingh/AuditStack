@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Support Reader — Audit Stack{% endblock %}
+{% block page_title %}Support Reader{% endblock %}
+{% block page_meta %}Extract fields from audit support documents{% endblock %}
+
+{% block content %}
+<div class="risk-layout">
+
+  <!-- ── LEFT PANEL ───────────────────────────────────────── -->
+  <div class="risk-controls">
+
+    <!-- Document Sets -->
+    <div class="card sessions-card">
+      <div class="card-header">
+        <span class="card-title">Document Sets</span>
+        <button class="btn btn-primary btn-sm" id="newSetBtn">+ New Set</button>
+      </div>
+
+      <div id="newSetForm" style="display:none;padding:12px 16px">
+        <input type="text" id="newSetName" class="control-input" placeholder="e.g. Q1 Vendor Invoices" maxlength="80" style="width:100%;margin-bottom:8px">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-primary btn-sm" id="createSetBtn" style="flex:1">Create</button>
+          <button class="btn btn-outline btn-sm" id="cancelSetBtn">Cancel</button>
+        </div>
+      </div>
+
+      <div class="session-list" id="setList">
+        {% for ds in doc_sets %}
+        <div class="session-item" data-set-id="{{ ds.id }}">
+          <span class="session-dot"></span>
+          <div class="session-item-info">
+            <span class="session-item-name">{{ ds.name }}</span>
+          </div>
+          <button class="btn btn-danger btn-sm session-delete-btn" data-set-id="{{ ds.id }}">Delete</button>
+        </div>
+        {% else %}
+        <div class="session-empty-msg" id="noSetsMsg">No sets yet — create one to get started.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Upload Zone -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Upload Document</span>
+        <span id="uploadSetLabel" style="font-size:11px;color:var(--color-text-muted)">No set selected</span>
+      </div>
+      <div style="padding:16px">
+        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.docx,.tiff">
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon" id="uploadIcon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="upload-title" id="uploadTitle">Select a document set first</div>
+          <div class="upload-hint">PDF · PNG · JPG · DOCX</div>
+        </div>
+        <div id="uploadStatus" style="display:none;padding:8px 0;text-align:center;font-size:13px"></div>
+      </div>
+    </div>
+
+    <!-- Custom Field Mapping -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Custom Field Mapping</span>
+        <button class="btn btn-outline btn-sm" id="addMappingRowBtn" disabled>+ Row</button>
+      </div>
+      <div class="card-body" style="padding:14px 16px">
+        <p style="font-size:12px;color:var(--color-text-muted);margin-bottom:10px">
+          Map a name you want to a label in the document. E.g. "Authorizer" &rarr; "CEO".
+        </p>
+        <table class="mapping-table" id="mappingTable">
+          <thead>
+            <tr>
+              <th>Your field name</th>
+              <th>Field on document</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="mappingBody">
+            <tr id="noMappingRow">
+              <td colspan="3" style="text-align:center;color:var(--color-text-muted);font-size:12px;padding:10px">
+                No custom mappings yet
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn btn-primary btn-sm" id="saveMappingsBtn" disabled style="width:100%;margin-top:10px">
+          Save Mappings
+        </button>
+        <p style="font-size:11px;color:var(--color-text-muted);margin-top:6px">
+          Applies to next uploaded document.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT PANEL ──────────────────────────────────────── -->
+  <div class="risk-results">
+
+    <!-- Stats bar -->
+    <div class="stats-bar" id="statsBar" style="display:none;margin-bottom:12px">
+      <div class="stat-card">
+        <span class="stat-value" id="statDocs">0</span>
+        <span class="stat-label">Documents</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="statTypes" style="font-size:14px">—</span>
+        <span class="stat-label">Types</span>
+      </div>
+      <div class="stats-spacer"></div>
+      <div style="display:flex;align-items:center">
+        <button class="btn btn-outline btn-sm" id="exportBtn">Export to Excel</button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="card" id="emptyState">
+      <div class="empty-state">
+        <div class="empty-icon">🗂</div>
+        <div class="empty-title">No documents yet</div>
+        <p class="empty-desc">Create a document set and upload your first file to extract fields automatically.</p>
+      </div>
+    </div>
+
+    <!-- Results table -->
+    <div class="card" id="tableWrapper" style="display:none;overflow-x:auto">
+      <table id="resultsTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Inline edit modal -->
+<div class="modal-overlay" id="editModal" style="display:none">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3 class="modal-title" id="editModalTitle">Edit Field</h3>
+      <button class="modal-close" id="editModalClose">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div style="padding:16px 24px 24px">
+      <textarea id="editModalValue" class="explanation-input" rows="4" style="width:100%;resize:vertical;min-height:80px"></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+        <button class="btn btn-outline btn-sm" id="editModalCancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="editModalSave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .mapping-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .mapping-table th { text-align:left; color:var(--color-text-muted); font-weight:500; padding:4px 6px; border-bottom:1px solid var(--color-card-border); }
+  .mapping-table td { padding:3px 3px; vertical-align:middle; }
+  .mapping-table input { width:100%; border:1px solid var(--color-card-border); border-radius:4px; padding:4px 6px; font-size:12px; font-family:var(--font); }
+  .mapping-table input:focus { outline:none; border-color:var(--color-accent); }
+  .mapping-row-del { background:none; border:none; color:var(--color-text-muted); cursor:pointer; padding:2px 6px; border-radius:3px; font-size:14px; line-height:1; }
+  .mapping-row-del:hover { color:#ef4444; background:#fee2e2; }
+
+  .doc-type-badge { display:inline-block; font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px; text-transform:uppercase; letter-spacing:.4px; }
+  .badge-check       { background:#eff6ff; color:#1d4ed8; }
+  .badge-invoice     { background:#f0fdf4; color:#166534; }
+  .badge-agreement   { background:#fdf4ff; color:#7c3aed; }
+  .badge-bank_statement { background:#fef3c7; color:#92400e; }
+  .badge-receipt     { background:#fff7ed; color:#c2410c; }
+  .badge-other       { background:#f1f5f9; color:#475569; }
+  .badge-error       { background:#fee2e2; color:#991b1b; }
+
+  .cell-editable { cursor:pointer; }
+  .cell-editable:hover { background:var(--color-accent-light) !important; border-radius:3px; }
+
+  .upload-area.upload-disabled { opacity:.45; pointer-events:none !important; cursor:default !important; }
+  .upload-area { cursor:pointer; }
+
+  td { max-width:220px; overflow:hidden; text-overflow:ellipsis; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/support_reader.js"></script>
+{% endblock %}

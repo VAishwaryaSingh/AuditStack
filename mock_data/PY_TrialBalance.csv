@@ -1,0 +1,42 @@
+Account Code,Account Name,Balance
+1010,Cash - Operating Account,842500
+1020,Cash - Reserve Account,215000
+1030,Petty Cash,2500
+1110,Accounts Receivable - Trade,1284000
+1120,Allowance for Doubtful Accounts,-62000
+1210,Prepaid Insurance,38400
+1220,Prepaid Rent,24000
+1230,Other Prepaid Expenses,11200
+1310,Office Equipment,185000
+1320,Accumulated Depreciation - Equipment,-74000
+1330,Furniture & Fixtures,62000
+1340,Accumulated Depreciation - Furniture,-18600
+1410,Security Deposits,45000
+2010,Accounts Payable - Trade,-542000
+2020,Accrued Salaries & Wages,-184000
+2030,Accrued Professional Fees,-67500
+2040,Accrued Interest Payable,-12800
+2110,Deferred Revenue,-98000
+2210,Short-Term Bank Loan,-300000
+3010,Common Stock,-500000
+3020,Additional Paid-In Capital,-1250000
+3030,Retained Earnings,-582200
+4010,Management Fee Revenue,-2840000
+4020,Advisory Fee Revenue,-620000
+4030,Performance Fee Revenue,-185000
+5010,Salaries & Wages Expense,1240000
+5020,Employee Benefits Expense,186000
+5030,Payroll Tax Expense,102000
+6010,Rent Expense,144000
+6020,Utilities Expense,28800
+6030,Office Supplies Expense,14400
+6040,Telephone & Internet Expense,19200
+6110,Professional Fees - Legal,95000
+6120,Professional Fees - Audit,72000
+6130,Professional Fees - Consulting,48000
+6210,Travel & Entertainment Expense,62000
+6220,Marketing & Business Development,84000
+6310,Depreciation Expense,30800
+6410,Insurance Expense,36000
+6420,Bank Charges & Fees,8400
+6430,Miscellaneous Expense,12600

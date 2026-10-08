@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Risk Assessment — Audit Stack{% endblock %}
+{% block page_title %}Risk Assessment Workspace{% endblock %}
+{% block page_meta %}Trial Balance Variance Analysis{% endblock %}
+
+{% block content %}
+<div class="risk-layout">
+
+  <!-- LEFT COLUMN: Controls -->
+  <div class="risk-controls">
+
+    <!-- SESSIONS PANEL -->
+    <div class="card sessions-card">
+      <div class="card-header">
+        <span class="card-title">Audit Sessions</span>
+        <button class="btn btn-primary btn-sm" id="newSessionBtn">+ New Session</button>
+      </div>
+      <div class="session-list" id="sessionList">
+        {% for s in sessions %}
+        <div class="session-item" data-session-id="{{ s.id }}">
+          <span class="session-dot"></span>
+          <div class="session-item-info">
+            <span class="session-item-name">{{ s.name }}</span>
+            <span class="session-item-meta">{{ s.created_at[:10] if s.created_at else '' }}</span>
+          </div>
+          <button class="btn btn-danger btn-sm session-delete-btn">Delete</button>
+        </div>
+        {% else %}
+        <div class="session-empty-msg" id="sessionEmptyMsg">No sessions yet — create one to get started.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- MATERIALITY / CTT -->
+    <div class="card control-panel">
+      <div class="card-header">
+        <span class="card-title">Materiality / CTT</span>
+      </div>
+      <div class="card-body">
+        <div class="control-group" style="width:100%">
+          <label for="thresholdAmt">Amount Threshold ($)</label>
+          <input type="number" class="control-input" id="thresholdAmt" value="50000" min="0" step="1000" style="width:100%">
+        </div>
+        <div class="control-group" style="width:100%">
+          <label for="thresholdPct">Percentage Threshold (%)</label>
+          <input type="number" class="control-input" id="thresholdPct" value="5" min="0" step="0.5" max="100" style="width:100%">
+        </div>
+        <button class="btn btn-primary" id="applyThresholdBtn" disabled style="width:100%">Apply &amp; Recalculate</button>
+      </div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Upload Trial Balances</span>
+      </div>
+      <div class="upload-stack">
+        <div class="upload-area" id="uploadPY" data-role="py">
+          <input type="file" id="filePY" accept=".csv,.xlsx,.xls">
+          <div class="upload-role-label">Prior Year (PY)</div>
+          <div class="upload-icon" id="iconPY">📂</div>
+          <div class="upload-title" id="titlePY">Drop file here or browse</div>
+          <div class="upload-hint" id="hintPY">CSV or Excel · Account Code, Name, Balance</div>
+          <button class="btn btn-outline btn-sm" id="browsePY">Browse File</button>
+          <div class="upload-filename d-none" id="filenamePY"></div>
+          <div class="upload-error-msg d-none" id="errorPY"></div>
+        </div>
+        <div class="upload-area" id="uploadCY" data-role="cy">
+          <input type="file" id="fileCY" accept=".csv,.xlsx,.xls">
+          <div class="upload-role-label">Current Year (CY)</div>
+          <div class="upload-icon" id="iconCY">📂</div>
+          <div class="upload-title" id="titleCY">Drop file here or browse</div>
+          <div class="upload-hint" id="hintCY">CSV or Excel · Account Code, Name, Balance</div>
+          <button class="btn btn-outline btn-sm" id="browseCY">Browse File</button>
+          <div class="upload-filename d-none" id="filenameCY"></div>
+          <div class="upload-error-msg d-none" id="errorCY"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /risk-controls -->
+
+  <!-- RIGHT COLUMN: Results -->
+  <div class="risk-results">
+    <div class="card results-card">
+      <div class="card-header">
+        <span class="card-title">Results</span>
+        <button class="btn btn-outline btn-sm" id="exportBtn" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export to Excel
+        </button>
+      </div>
+
+      <div class="stats-bar stats-bar--inner">
+        <div class="stat-card">
+          <span class="stat-label">Total Accounts</span>
+          <span class="stat-value" id="statTotal">—</span>
+        </div>
+        <div class="stat-card flagged">
+          <span class="stat-label">Requires Explanation</span>
+          <span class="stat-value" id="statFlagged">—</span>
+        </div>
+        <div class="stat-card complete">
+          <span class="stat-label">Explained</span>
+          <span class="stat-value" id="statExplained">—</span>
+        </div>
+        <div class="stat-card pending">
+          <span class="stat-label">Pending</span>
+          <span class="stat-value" id="statPending">—</span>
+        </div>
+      </div>
+
+      <div class="table-toolbar">
+        <input type="text" class="table-search" id="tableSearch" placeholder="Search accounts…">
+        <div class="filter-chips">
+          <button class="chip active" data-filter="all">All</button>
+          <button class="chip" data-filter="flagged">Flagged</button>
+          <button class="chip" data-filter="pending">Needs Explanation</button>
+          <button class="chip" data-filter="complete">Explained</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="riskTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-col="account_code">Account Code</th>
+              <th class="sortable" data-col="account_name">Account Name</th>
+              <th class="sortable numeric" data-col="py_balance">PY Balance</th>
+              <th class="sortable numeric" data-col="cy_balance">CY Balance</th>
+              <th class="sortable numeric" data-col="variance_amount">Variance ($)</th>
+              <th class="sortable numeric" data-col="variance_pct">Variance (%)</th>
+              <th data-col="status">CTT Status</th>
+              <th data-col="materiality">Materiality / CTT</th>
+              <th data-col="client_explanation">Client Explanation</th>
+            </tr>
+          </thead>
+          <tbody id="riskTableBody">
+            <tr>
+              <td colspan="9">
+                <div class="empty-state">
+                  <div class="empty-icon">📊</div>
+                  <div class="empty-title">No data yet</div>
+                  <div class="empty-desc">Select or create a session, then upload your PY and CY trial balances.</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /risk-results -->
+
+</div><!-- /risk-layout -->
+
+<!-- NEW SESSION MODAL -->
+<div class="modal-overlay hidden" id="newSessionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Audit Session</span>
+      <button class="modal-close" id="closeModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="control-group" style="width:100%">
+        <label for="sessionNameInput">Session Name</label>
+        <input type="text" class="modal-input" id="sessionNameInput" placeholder="e.g. FY2025 Audit — ABC Ltd" maxlength="120">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="cancelModal">Cancel</button>
+      <button class="btn btn-primary" id="confirmModal">Create Session</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/upload.js"></script>
+<script src="/static/js/risk_table.js"></script>
+{% endblock %}

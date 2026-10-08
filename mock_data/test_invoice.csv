@@ -1,0 +1,11 @@
+transaction_id,vendor,ref,date,line_item,quantity,unit_price,due_date,line_total
+TXN-10421,Acme Industrial Corp,INV-AC-9921,2025-11-13,Industrial Centrifugal Pumps,50,240.00,2025-12-13,12000.00
+TXN-10422,Northwind Logistics,INV-NW-7723,2025-11-10,Warehouse Shelving Units,20,185.00,2025-12-10,3700.00
+TXN-10423,Lumen Optics Ltd,INV-LM-4452,2025-11-15,LED Panel Lights (40W),200,45.00,2025-12-15,9000.00
+TXN-10424,Helix Chemicals GmbH,INV-HX-3318,2025-11-16,Industrial Solvent (25L),30,320.00,2025-12-16,9600.00
+TXN-10425,Bristol Office Supply,INV-BS-8867,2025-11-18,Ergonomic Task Chairs,15,410.00,2025-12-18,6150.00
+TXN-10426,Vertex Steelworks,INV-VS-2244,2025-11-19,Steel Beam Sections (6m),40,95.00,2025-12-19,3800.00
+TXN-10427,Atlas Cleaning Co,INV-AT-9984,2025-11-20,Commercial Floor Cleaner (10L),100,28.50,2025-12-20,2850.00
+TXN-10428,Continental Hardware,INV-CH-1175,2025-11-19,Stainless Steel Brackets (Type-B),100,9.50,2025-12-19,950.00
+TXN-10429,Pioneer Polymers,INV-PP-6681,2025-11-21,HD Polyethylene Pellets (500kg),500,4.98,2025-12-21,2490.00
+TXN-10430,Quantum Components,INV-QC-4488,2025-11-21,PCB Assembly Modules (Rev-3),75,67.00,2025-12-21,5025.00
