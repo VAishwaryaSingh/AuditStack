@@ -2,6 +2,8 @@
 
 Local web-based audit platform (Flask + SQLite + vanilla JS).
 
+**Live:** https://audit-stack.onrender.com
+
 **Modules:** Risk Assessment (trial balance variance & materiality), Support Reader (offline document extraction), 3-Way Match Automator.
 
 ## Run locally
