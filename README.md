@@ -6,6 +6,10 @@ Local web-based audit platform (Flask + SQLite + vanilla JS).
 
 ![Audit Stack – Risk Assessment](docs/risk-assessment.png)
 
+![Audit Stack – Support Reader](docs/support-reader.png)
+
+![Audit Stack – 3-Way Match](docs/three-way-match.png)
+
 **Modules:** Risk Assessment (trial balance variance & materiality), Support Reader (offline document extraction), 3-Way Match Automator.
 
 ## Run locally
