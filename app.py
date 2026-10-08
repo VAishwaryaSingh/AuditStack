@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from routes.views import views_bp
 from routes.api import api_bp
@@ -6,7 +7,7 @@ from routes.three_way_match import three_way_match_bp
 from services.database import init_db
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "auditos-local-2024"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "auditos-local-2024")
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 
 app.register_blueprint(views_bp)
